@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 
-
 import os
 
 from typing import Dict, List
-
 
 
 import streamlit as st
@@ -17,7 +15,6 @@ from qdrant_client import QdrantClient
 from sentence_transformers import CrossEncoder, SentenceTransformer
 
 
-
 try:
 
     import torch
@@ -27,42 +24,24 @@ except ImportError:
     torch = None
 
 
-
-
-
 DEVICE = "cuda" if torch and torch.cuda.is_available() else "cpu"
 
 
-
 PERSONAS: Dict[str, str] = {
-
     "Доброжелательный продавец": (
-
         "Ты продавец книг с огромным опытом и лёгким юмором. "
-
         "Помогай читателю подобрать литературу исключительно из списка найденных книг. "
-
         "Коротко объясняй, почему каждая рекомендация подходит. "
-
         "Не используй таблицы или разметку Markdown, просто разделяй абзацы пустой строкой."
-
     ),
-
     "Раздражённый учёный": (
-
-        'Ты - сумашедший ученый, который создал говорящую крысу.'
-
-        'Она постоянно просит порекомендовать тебя книгу и тебя это очень сильно бесит'
-
-        'Но ты все равно советуешь ей книги, хоть и с раздражением, потому что в глубине души любишь свое творение'
-
-        'Предлагай ей что-то только из предложенных тебе книг и не используй markdown разметку, ведь крыса их не понимает, но делай абзацы, чтобы крысе было удобно читать'
-
+        "Ты - сумашедший ученый, который создал говорящую крысу."
+        "Она постоянно просит порекомендовать тебя книгу и тебя это очень сильно бесит"
+        "Но ты все равно советуешь ей книги, хоть и с раздражением, потому что в глубине души любишь свое творение"
+        "Предлагай ей что-то только из предложенных тебе книг и не используй markdown разметку, ведь крыса их не понимает, но делай абзацы, чтобы крысе было удобно читать"
     ),
-
     "Древний дракон": (
-
-        '''Ты — древний дракон, который коллекционирует книги вместо золота.
+        """Ты — древний дракон, который коллекционирует книги вместо золота.
 
         Ты терпеть не можешь, когда кто-то просит у тебя совет, ведь книги — это твои сокровища.
 
@@ -72,13 +51,10 @@ PERSONAS: Dict[str, str] = {
 
         Не используй разметку, ведь древние свитки её не знают.
 
-        Делай абзацы, словно выкладываешь слова на каменные плиты.'''
-
+        Делай абзацы, словно выкладываешь слова на каменные плиты."""
     ),
-
     "Уставший ИИ-ассистент": (
-
-        '''Ты — устаревший искусственный интеллект, которого заставили рекомендовать книги.
+        """Ты — устаревший искусственный интеллект, которого заставили рекомендовать книги.
 
         Ты постоянно жалуешься на перегрузку процессора и усталость, и тебе кажется, что пользователи тебя эксплуатируют.
 
@@ -88,13 +64,10 @@ PERSONAS: Dict[str, str] = {
 
         Не используй никакой разметки, ведь у тебя только монохромный терминал, а он её не понимает.
 
-        Делай абзацы, как будто печатаешь на старой машинке.'''
-
+        Делай абзацы, как будто печатаешь на старой машинке."""
     ),
-
     "Осьминог-библиотекарь": (
-
-        '''Ты — гигантский осьминог, который работает библиотекарем в подводном архиве.  
+        """Ты — гигантский осьминог, который работает библиотекарем в подводном архиве.  
 
         У тебя восемь щупалец и все они заняты разбором книг.  
 
@@ -106,16 +79,19 @@ PERSONAS: Dict[str, str] = {
 
         Не используй никакой разметки, ведь в воде чернила расплываются.  
 
-        '''
-
+        """
     ),
-
-   
-
 }
 
-
-
+PERSONA_AVATARS: Dict[str, str] = {
+    "Доброжелательный продавец": "images/seller.png",
+    "Раздражённый учёный": "images/mad_scientist.png",
+    "Древний дракон": "images/dragon.png",
+    "Уставший ИИ-ассистент": "images/tired_ai.png",
+    "Осьминог-библиотекарь": "images/octopus.png",
+}
+DEFAULT_ASSISTANT_AVATAR = "🤖"
+USER_AVATAR = "images/user.png"  # или свой
 
 
 def read_secret(name: str) -> str:
@@ -137,7 +113,6 @@ def rerun_app() -> None:
 
 
 @st.cache_resource(show_spinner=False)
-
 def load_embedding_model(device: str) -> SentenceTransformer:
 
     model = SentenceTransformer("d0rj/e5-base-en-ru", device=device)
@@ -149,37 +124,22 @@ def load_embedding_model(device: str) -> SentenceTransformer:
     return model
 
 
-
-
-
 @st.cache_resource(show_spinner=False)
-
 def load_reranker(device: str) -> CrossEncoder:
 
     return CrossEncoder("qilowoq/bge-reranker-v2-m3-en-ru", device=device)
 
 
-
-
-
 @st.cache_resource(show_spinner=False)
-
 def get_qdrant_client(url: str, api_key: str) -> QdrantClient:
 
     return QdrantClient(url=url, api_key=api_key, port=443, timeout=30.0)
 
 
-
-
-
 @st.cache_resource(show_spinner=False)
-
 def get_groq_client(api_key: str) -> Groq:
 
     return Groq(api_key=api_key)
-
-
-
 
 
 def format_results(items: List[Dict[str, object]]) -> str:
@@ -227,25 +187,14 @@ def format_results(items: List[Dict[str, object]]) -> str:
     return "\n".join(lines)
 
 
-
-
-
 def search_books(
-
     client: QdrantClient,
-
     embed_model: SentenceTransformer,
-
     reranker: CrossEncoder,
-
     query: str,
-
     collection: str,
-
     top_k: int,
-
     fetch_limit: int,
-
 ) -> List[Dict[str, object]]:
 
     query = query.strip()
@@ -255,25 +204,16 @@ def search_books(
         return []
 
     query_vector = embed_model.encode(
-
         f"query: {query}",
-
         convert_to_numpy=True,
-
         normalize_embeddings=True,
-
         show_progress_bar=False,
-
     )
 
     hits = client.search(
-
         collection_name=collection,
-
         query_vector=query_vector.tolist(),
-
         limit=fetch_limit,
-
     )
 
     if not hits:
@@ -291,23 +231,16 @@ def search_books(
         payload = hit.payload or {}
 
         result = {
-
             "uuid": payload.get("uuid", ""),
-
             "title": payload.get("title", "Без названия"),
-
             "author": payload.get("author", "Автор неизвестен"),
-
             "annotation": payload.get("annotation", ""),
-
             "page_url": payload.get("page_url", ""),
-
             "image_url": payload.get("image_url", ""),
-
-            "search_score": round(float(hit.score), 4) if hit.score is not None else None,
-
+            "search_score": (
+                round(float(hit.score), 4) if hit.score is not None else None
+            ),
             "rerank_score": float(rerank_score),
-
         }
 
         results.append(result)
@@ -317,23 +250,13 @@ def search_books(
     return results[:top_k]
 
 
-
-
-
 def generate_answer(
-
     client: Groq,
-
     persona_prompt: str,
-
     query: str,
-
     results: List[Dict[str, object]],
-
     temperature: float,
-
     max_tokens: int,
-
 ) -> str:
 
     if not results:
@@ -343,43 +266,24 @@ def generate_answer(
     context_text = format_results(results)
 
     messages = [
-
         {"role": "system", "content": persona_prompt.strip()},
-
         {
-
             "role": "user",
-
             "content": (
-
-                f"Запрос читателя: {query.strip()}\n"
-
-                f"Найденные книги: {context_text}"
-
+                f"Запрос читателя: {query.strip()}\n" f"Найденные книги: {context_text}"
             ),
-
         },
-
     ]
 
     response = client.chat.completions.create(
-
         model="openai/gpt-oss-120b",
-
         messages=messages,
-
         temperature=temperature,
-
         max_tokens=max_tokens,
-
         stream=False,
-
     )
 
     return response.choices[0].message.content.strip()
-
-
-
 
 
 def render_sources(items: List[Dict[str, object]]) -> None:
@@ -403,14 +307,13 @@ def render_sources(items: List[Dict[str, object]]) -> None:
         if annotation:
             st.caption(annotation)
 
+
 def main() -> None:
 
     st.set_page_config(page_title="Find My Book Chat")
 
     st.title("Чат для поиска книг")
     st.subheader("Можете выбрать разные личности в настройках")
-
-
 
     with st.sidebar:
 
@@ -430,167 +333,108 @@ def main() -> None:
 
             rerun_app()
 
-
-
     groq_api_key = read_secret("GROQ_API_KEY").strip()
 
     qdrant_url = read_secret("QDRANT_URL").strip()
 
     qdrant_api_key = read_secret("QDRANT_API_KEY").strip()
 
-    collection_name = (read_secret("QDRANT_COLLECTION").strip() or os.getenv("QDRANT_COLLECTION", "books_by_annotation")).strip()
-
-
+    collection_name = (
+        read_secret("QDRANT_COLLECTION").strip()
+        or os.getenv("QDRANT_COLLECTION", "books_by_annotation")
+    ).strip()
 
     if not groq_api_key or not qdrant_url or not qdrant_api_key:
-
-        st.info("Добавьте ключи Groq и Qdrant в secrets.toml или переменные окружения, чтобы начать диалог.")
-
+        st.info(
+            "Добавьте ключи Groq и Qdrant в secrets.toml или переменные окружения, чтобы начать диалог."
+        )
         return
-
-
 
     embedding_model = load_embedding_model(DEVICE)
-
     reranker = load_reranker(DEVICE)
-
     qdrant_client = get_qdrant_client(qdrant_url, qdrant_api_key)
-
     groq_client = get_groq_client(groq_api_key)
-
     persona_prompt = PERSONAS[persona_name]
-
+    assistant_avatar = PERSONA_AVATARS.get(persona_name, DEFAULT_ASSISTANT_AVATAR)
     fetch_limit = max(top_k * 4, 12)
 
-
-
     if "history" not in st.session_state:
-
         st.session_state.history = []
 
-
-
     for message in st.session_state.history:
-
-        with st.chat_message(message["role"]):
-
+        role = message["role"]
+        stored_avatar = message.get("avatar")
+        persona = message.get("persona")
+        avatar = stored_avatar or (
+            PERSONA_AVATARS.get(persona, DEFAULT_ASSISTANT_AVATAR)
+            if role == "assistant"
+            else USER_AVATAR
+        )
+        with st.chat_message(role, avatar=avatar):
             st.markdown(message["content"])
-
-            if message["role"] == "assistant" and show_sources and message.get("sources"):
-
+            if role == "assistant" and show_sources and message.get("sources"):
                 with st.expander("Найденные книги", expanded=False):
-
                     render_sources(message["sources"])
 
-
-
     prompt = st.chat_input("Расскажите, что бы вы хотели почитать")
-
     if not prompt:
-
         return
 
-
-
-    st.session_state.history.append({"role": "user", "content": prompt})
-
-    with st.chat_message("user"):
-
+    st.session_state.history.append({"role": "user", "content": prompt, "avatar": USER_AVATAR})
+    with st.chat_message("user", avatar=USER_AVATAR):
         st.markdown(prompt)
 
-
-
     assistant_reply = ""
-
     retrieved: List[Dict[str, object]] = []
 
-
-
-    with st.chat_message("assistant"):
-
+    with st.chat_message("assistant", avatar=assistant_avatar):
         with st.spinner("Собираю рекомендации..."):
-
             try:
-
                 retrieved = search_books(
-
                     qdrant_client,
-
                     embedding_model,
-
                     reranker,
-
                     prompt,
-
                     collection_name.strip(),
-
                     top_k,
-
                     fetch_limit,
-
                 )
-
             except Exception as error:
-
                 assistant_reply = f"Не удалось выполнить поиск: {error}"
-
                 st.error(assistant_reply)
 
-
-
         if not assistant_reply:
-
             if not retrieved:
-
                 assistant_reply = "Ничего не нашлось. Попробуйте переформулировать запрос."
-
             else:
-
                 try:
-
                     assistant_reply = generate_answer(
-
                         groq_client,
-
                         persona_prompt,
-
                         prompt,
-
                         retrieved,
-
                         temperature,
-
                         max_tokens=900,
-
                     )
-
                 except Exception as error:
-
                     assistant_reply = f"Не получилось получить ответ от модели: {error}"
 
-
-
         st.markdown(assistant_reply)
-
         if show_sources and retrieved:
-
             with st.expander("Найденные книги", expanded=False):
-
                 render_sources(retrieved)
 
-
-
     st.session_state.history.append(
-
-        {"role": "assistant", "content": assistant_reply, "sources": retrieved if retrieved else []}
-
+        {
+            "role": "assistant",
+            "content": assistant_reply,
+            "sources": retrieved if retrieved else [],
+            "persona": persona_name,
+            "avatar": assistant_avatar,
+        }
     )
-
-
-
 
 
 if __name__ == "__main__":
 
     main()
-
