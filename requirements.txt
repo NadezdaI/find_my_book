@@ -1,0 +1,5 @@
+streamlit
+qdrant-client
+groq
+sentence-transformers
+torch
