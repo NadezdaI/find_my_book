@@ -1,7 +1,9 @@
 import streamlit as st
 from PIL import Image
+from pathlib import Path
 import base64
 import io
+import os
 import random
 import pandas as pd
 from functions import display_book
@@ -23,7 +25,11 @@ if "n_books" not in st.session_state:
     st.session_state.n_books = 10
 
 # ------------- Заголовок ---------
-img = Image.open("black_white.png").convert("RGBA")
+BASE_DIR = Path(__file__).parent
+
+img_path = BASE_DIR / "black_white.png"
+img = Image.open(img_path).convert("RGBA")
+
 buffered = io.BytesIO()
 img.save(buffered, format="PNG")
 img_str = base64.b64encode(buffered.getvalue()).decode()
@@ -80,7 +86,13 @@ details[open] summary {
 
 # ----------- Подключение к облаку Qadrant -------------
 
-client = QdrantClient(url=st.secrets["QDRANT_URL_N"], api_key=st.secrets["QDRANT_API_N"])
+def get_secret(key: str) -> str:
+    return st.secrets.get(key, os.getenv(key))
+
+QDRANT_URL_N = get_secret("QDRANT_URL_N")
+QDRANT_API_N = get_secret("QDRANT_API_N")
+
+client = QdrantClient(url=QDRANT_URL_N, api_key=QDRANT_API_N)
 
 embeddings_model = HuggingFaceEmbeddings(
         model_name="sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
