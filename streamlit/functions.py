@@ -4,7 +4,7 @@ import streamlit as st
 def display_book(title, author, link, img, annotation, score=None):
     # Обрабатываем описание
     desc = str(annotation) if annotation else "Нет описания"
-    desc = desc.encode('utf-8', 'ignore').decode('utf-8')
+    # desc = desc.encode('utf-8', 'ignore').decode('utf-8')
     desc = html.escape(desc)
     
     # Разбиваем описание на слова
@@ -13,9 +13,12 @@ def display_book(title, author, link, img, annotation, score=None):
     if len(words) > 50:
         desc_preview = " ".join(words[:50])
         desc_rest = " ".join(words[50:])
+        # desc_preview = html.escape(desc_preview)
+        # desc_rest = html.escape(desc_rest)
         show_details = f'<details><summary>Показать больше</summary>{desc_rest}</details>'
     else:
         desc_preview = desc
+        desc_rest=""
         show_details = ""
     
     # Формируем строку с автором (добавляем score если есть)
@@ -46,3 +49,4 @@ def display_book(title, author, link, img, annotation, score=None):
         </table>
     </div>
     """, unsafe_allow_html=True)
+

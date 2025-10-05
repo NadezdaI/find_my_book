@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import os
 
+from pathlib import Path
+
 from typing import Dict, List
 
 
@@ -83,15 +85,18 @@ PERSONAS: Dict[str, str] = {
     ),
 }
 
+BASE_DIR = Path(__file__).parent
+
 PERSONA_AVATARS: Dict[str, str] = {
-    "Доброжелательный продавец": "images/seller.png",
-    "Раздражённый учёный": "images/mad_scientist.png",
-    "Древний дракон": "images/dragon.png",
-    "Уставший ИИ-ассистент": "images/tired_ai.png",
-    "Осьминог-библиотекарь": "images/octopus.png",
+    "Доброжелательный продавец": str(BASE_DIR / "images" / "seller.png"),
+    "Раздражённый учёный": str(BASE_DIR / "images" / "mad_scientist.png"),
+    "Древний дракон": str(BASE_DIR / "images" / "dragon.png"),
+    "Уставший ИИ-ассистент": str(BASE_DIR / "images" / "tired_ai.png"),
+    "Осьминог-библиотекарь": str(BASE_DIR / "images" / "octopus.png"),
 }
+
 DEFAULT_ASSISTANT_AVATAR = "🤖"
-USER_AVATAR = "images/user.png"  # или свой
+USER_AVATAR = str(BASE_DIR / "images" / "user.png")  # или свой
 
 
 def read_secret(name: str) -> str:
