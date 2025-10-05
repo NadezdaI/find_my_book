@@ -42,15 +42,14 @@ st.markdown(
 
 st.markdown(
     """
-Этот сервис помогает находить книги не только по названию или автору, но и по содержанию аннотаций.
-Мы собрали большую коллекцию аннотаций (28000+ книг) и используем методы обработки естественного языка (NLP), чтобы анализировать текст запроса и тексты книг.
+Сервис предлагает интеллектуальный поиск книг по смыслу аннотаций. Мы собрали коллекцию из более чем 28 000 книг и используем методы обработки естественного языка (NLP), чтобы находить произведения, близкие по содержанию к вашему запросу.
 
 """
 )
 st.markdown("---")
 
 # -------- Поле запроса -----------
-query = st.text_input("", placeholder="Введите запрос (например, «Хочу книгу о философии науки и её влиянии на политику»)")
+query = st.text_input("", placeholder="Опишите, какую книгу вы ищете (например, «о философии науки и её влиянии на политику»)")
 
 st.markdown("""
     <style>
@@ -81,7 +80,7 @@ details[open] summary {
 
 # ----------- Подключение к облаку Qadrant -------------
 
-client = QdrantClient(url=st.secrets["QDRANT_URL"], api_key=st.secrets["QDRANT_API"])
+client = QdrantClient(url=st.secrets["QDRANT_URL_N"], api_key=st.secrets["QDRANT_API_N"])
 
 embeddings_model = HuggingFaceEmbeddings(
         model_name="sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
@@ -109,7 +108,7 @@ if trigger and query:
 # ---------- Отображение результатов или стартовой страницы -------------
 if st.session_state.show_results and hasattr(st.session_state, 'search_results'):
     # ---------- РЕЖИМ РЕКОМЕНДАЦИЙ -----------
-    st.markdown(f"### Топ 10 рекомендаций по запросу: ")  # \"{st.session_state.search_query}\"
+    st.markdown(f"### Топ 10 рекомендаций по запросу ")  # \"{st.session_state.search_query}\"
     results_to_show = st.session_state.search_results[:st.session_state.n_books]
     
     for i, (doc, score) in enumerate(results_to_show):
@@ -135,7 +134,7 @@ else:
     df = pd.read_csv('../data/books.csv')
 
     def show_books(n_books):
-        st.markdown(f"### Актуальные книги сегодня: ")
+        st.markdown(f"### Актуальные книги сегодня ")
         sampled_idx = random.sample(range(len(df)), k=n_books)
 
         for idx in sampled_idx:
